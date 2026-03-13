@@ -11,9 +11,37 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
 import os
+import matplotlib.font_manager as fm
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
+# 设置中文字体 - 尝试多个字体配置
+import matplotlib.font_manager as fm
+
+# 获取系统中可用的中文字体
+try:
+    # Windows系统常见中文字体
+    font_paths = [
+        'C:\\Windows\\Fonts\\SimHei.ttf',      # 黑体
+        'C:\\Windows\\Fonts\\msyh.ttc',        # 微软雅黑
+        'C:\\Windows\\Fonts\\SimSun.ttc',      # 宋体
+    ]
+    
+    font_name = None
+    for font_path in font_paths:
+        if os.path.exists(font_path):
+            fm.fontManager.addfont(font_path)
+            # 获取字体名称
+            font = fm.FontProperties(fname=font_path)
+            font_name = font.get_name()
+            break
+    
+    if font_name:
+        plt.rcParams['font.sans-serif'] = [font_name, 'DejaVu Sans']
+    else:
+        # 备用方案：使用系统默认中文字体
+        plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']
+except:
+    plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']
+
 plt.rcParams['axes.unicode_minus'] = False
 
 # ==================== 配置区域 ====================
@@ -251,7 +279,7 @@ class PBVisualizer:
         """
         
         axes[1, 1].text(0.1, 0.5, stats_text, fontsize=10, verticalalignment='center',
-                       family='monospace', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+                       family='sans-serif', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
         axes[1, 1].axis('off')
         
         plt.tight_layout()
@@ -322,13 +350,12 @@ class PBVisualizer:
         price_change = latest_price - self.df['收盘价'].iloc[0]
         price_change_pct = price_change / self.df['收盘价'].iloc[0] * 100
         
-        summary_text = f"""
-数据周期: {self.df['日期'].min().strftime('%Y-%m-%d')} ~ {self.df['日期'].max().strftime('%Y-%m-%d')}   |   数据样本: {len(self.df)}条   |   当前PB: {self.df['当前PB'].iloc[-1]:.2f}
+        summary_text = f"""数据周期: {self.df['日期'].min().strftime('%Y-%m-%d')} ~ {self.df['日期'].max().strftime('%Y-%m-%d')}   |   数据样本: {len(self.df)}条   |   当前PB: {self.df['当前PB'].iloc[-1]:.2f}
 
-当前股价: ¥{latest_price:.2f}   |   周期涨幅: {price_change_pct:+.2f}%   |   历史最高: ¥{self.df['收盘价'].max():.2f}   |   历史最低: ¥{self.df['收盘价'].min():.2f}
-        """
+当前股价: ¥{latest_price:.2f}   |   周期涨幅: {price_change_pct:+.2f}%   |   历史最高: ¥{self.df['收盘价'].max():.2f}   |   历史最低: ¥{self.df['收盘价'].min():.2f}"""
+        
         ax1.text(0.5, 0.5, summary_text, ha='center', va='center', fontsize=11, 
-                family='monospace', transform=ax1.transAxes,
+                family='sans-serif', transform=ax1.transAxes,
                 bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.3, pad=1))
         
         # 2. 收盘价走势
